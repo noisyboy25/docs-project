@@ -1,4 +1,4 @@
-module github.com/noisyboy25/render-pg
+module github.com/noisyboy25/docs-project
 
 go 1.19
 
