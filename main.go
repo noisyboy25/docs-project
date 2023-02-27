@@ -63,6 +63,8 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 
+	app.Static("/", "./client/dist")
+
 	api := app.Group("/api")
 	productApi := api.Group("products")
 
