@@ -11,14 +11,16 @@ services:
           name: test
           property: connectionString
   - type: web
-    name: web
+    name: web client
     rootDir: client
-    region: frankfurt # optional (defaults to oregon)
-    plan: free # optional (defaults to starter)
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
     envVars:
       - key: API_HOST
         fromService:
           name: api
+          type: web
           property: host
 
 databases:
