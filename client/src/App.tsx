@@ -2,6 +2,7 @@ import ProductList from './ProductList';
 import ProductForm from './ProductForm';
 import { Container } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { API_URL } from './global';
 
 export type Product = {
   ID: number;
@@ -16,7 +17,7 @@ function App() {
   const [products, setProducts] = useState<Product[]>([]);
 
   const handleUpdateProducts = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_HOST}/api/products/`);
+    const res = await fetch(`${API_URL}/api/products/`);
     const data = await res.json();
     setProducts(data.products);
   };

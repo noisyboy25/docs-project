@@ -9,6 +9,7 @@ import {
   Spacer,
 } from '@chakra-ui/react';
 import { Product } from './App';
+import { API_URL } from './global';
 
 function ProductList({
   products,
@@ -18,7 +19,9 @@ function ProductList({
   onUpdateProducts: Function;
 }) {
   const handleDelete = async (id: number) => {
-    const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_URL}/api/products/${id}`, {
+      method: 'DELETE',
+    });
     if (res.ok) updateProducts();
   };
 

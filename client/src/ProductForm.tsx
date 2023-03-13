@@ -1,6 +1,7 @@
 import { Button, FormControl, FormLabel, Input } from '@chakra-ui/react';
 import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { API_URL } from './global';
 
 type Inputs = {
   code: string;
@@ -15,7 +16,7 @@ function ProductForm({
   const { register, handleSubmit, reset } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     console.log(data);
-    const res = await fetch('/api/products/', {
+    const res = await fetch(`${API_URL}/api/products/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
