@@ -21,7 +21,7 @@ services:
         fromService:
           name: api
           type: web
-          property: connectionString
+          property: host
 
 databases:
   # db 1
