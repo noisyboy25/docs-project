@@ -1,7 +1,7 @@
 services:
   # A Docker web service
   - type: web
-    name: fiber
+    name: api
     env: docker
     region: frankfurt # optional (defaults to oregon)
     plan: free # optional (defaults to starter)
@@ -10,6 +10,17 @@ services:
         fromDatabase:
           name: test
           property: connectionString
+  - type: web
+    name: web
+    rootDir: client
+    region: frankfurt # optional (defaults to oregon)
+    plan: free # optional (defaults to starter)
+    envVars:
+      - key: API_HOST
+        fromService:
+          name: api
+          property: host
+
 databases:
   # db 1
   - name: test
