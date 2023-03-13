@@ -17,7 +17,7 @@ services:
     buildCommand: npm run build
     staticPublishPath: ./dist
     envVars:
-      - key: API_HOST
+      - key: VITE_API_HOST
         fromService:
           name: api
           type: web
