@@ -19,10 +19,14 @@ function ProductList({
   onUpdateProducts: Function;
 }) {
   const handleDelete = async (id: number) => {
-    const res = await fetch(`${API_URL}/api/products/${id}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) updateProducts();
+    try {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) updateProducts();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

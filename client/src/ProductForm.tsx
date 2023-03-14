@@ -15,18 +15,22 @@ function ProductForm({
 }) {
   const { register, handleSubmit, reset } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    console.log(data);
-    const res = await fetch(`${API_URL}/api/products/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    console.log(res);
-    if (res.ok) {
-      reset();
-      updateProducts();
+    try {
+      console.log(data);
+      const res = await fetch(`${API_URL}/api/products/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      console.log(res);
+      if (res.ok) {
+        reset();
+        updateProducts();
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
