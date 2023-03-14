@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
@@ -62,6 +63,9 @@ func init() {
 func main() {
 	app := fiber.New()
 	app.Use(logger.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+	}))
 
 	app.Static("/", "./client/dist")
 
