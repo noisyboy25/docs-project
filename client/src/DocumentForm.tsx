@@ -4,30 +4,31 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { API_URL } from './global';
 
 type Inputs = {
-  code: string;
-  price: number;
+  name: string;
+  file: any;
 };
 
-function ProductForm({
-  onUpdateProducts: updateProducts,
+function DocumentForm({
+  onUpdateDocuments: updateDocuments,
 }: {
-  onUpdateProducts: Function;
+  onUpdateDocuments: Function;
 }) {
   const { register, handleSubmit, reset } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
       console.log(data);
-      const res = await fetch(`${API_URL}/api/products/`, {
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('file', data.file[0]);
+
+      const res = await fetch(`${API_URL}/api/documents/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: formData,
       });
       console.log(res);
       if (res.ok) {
         reset();
-        updateProducts();
+        updateDocuments();
       }
     } catch (error) {
       console.log(error);
@@ -37,14 +38,14 @@ function ProductForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormControl>
-        <FormLabel>Code</FormLabel>
-        <Input type="text" {...register('code', { required: true })} />
+        <FormLabel>Name</FormLabel>
+        <Input type="text" {...register('name', { required: true })} />
       </FormControl>
       <FormControl>
-        <FormLabel>Price</FormLabel>
+        <FormLabel>File</FormLabel>
         <Input
-          type="number"
-          {...register('price', { required: true, valueAsNumber: true })}
+          type="file"
+          {...register('file', { required: true, valueAsNumber: true })}
         />
       </FormControl>
       <Button mt={4} type="submit">
@@ -54,4 +55,4 @@ function ProductForm({
   );
 }
 
-export default ProductForm;
+export default DocumentForm;

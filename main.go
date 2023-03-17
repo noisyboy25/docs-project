@@ -15,13 +15,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-type Product struct {
+type Document struct {
 	gorm.Model
-	Code  string
-	Price uint
+	Name string `gorm:"unique"`
 }
 
-type ProductCreate struct {
+type DocumentCreate struct {
 	Code  string `json:"Code" form:"Code"`
 	Price uint   `json:"Price" form:"Price"`
 }
@@ -57,7 +56,7 @@ func init() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&Product{})
+	db.AutoMigrate(&Document{})
 }
 
 func main() {
@@ -70,27 +69,43 @@ func main() {
 	app.Static("/", "./client/dist")
 
 	api := app.Group("/api")
-	productApi := api.Group("products")
+	documentApi := api.Group("documents")
 
-	productApi.Get("/", func(c *fiber.Ctx) error {
-		var products = []Product{}
+	documentApi.Get("/", func(c *fiber.Ctx) error {
+		var documents = []Document{}
 
-		result := db.Find(&products)
+		result := db.Find(&documents)
 		if result.Error != nil {
 			return result.Error
 		}
 
-		return c.JSON(fiber.Map{"products": products})
+		return c.JSON(fiber.Map{"documents": documents})
 	})
 
-	productApi.Post("/", func(c *fiber.Ctx) error {
-		np := new(Product)
+	documentApi.Post("/", func(c *fiber.Ctx) error {
+		np := new(Document)
 
 		if err := c.BodyParser(np); err != nil {
 			return err
 		}
 
-		p := Product{Code: np.Code, Price: np.Price}
+		file, err := c.FormFile("file")
+		if err != nil {
+			return err
+		}
+
+		storagePath := "./file-storage"
+		err = os.MkdirAll(storagePath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+
+		err = c.SaveFile(file, fmt.Sprintf("./file-storage/%s", file.Filename))
+		if err != nil {
+			return err
+		}
+
+		p := Document{Name: np.Name}
 
 		result := db.Create(&p)
 		if result.Error != nil {
@@ -100,10 +115,10 @@ func main() {
 		return c.JSON(p)
 	})
 
-	productApi.Delete("/:id", func(c *fiber.Ctx) error {
+	documentApi.Delete("/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 
-		result := db.Delete(&Product{}, id)
+		result := db.Delete(&Document{}, id)
 		if result.Error != nil {
 			return result.Error
 		}

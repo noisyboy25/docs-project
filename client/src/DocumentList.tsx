@@ -8,22 +8,22 @@ import {
   Flex,
   Spacer,
 } from '@chakra-ui/react';
-import { Product } from './App';
+import { Document } from './App';
 import { API_URL } from './global';
 
-function ProductList({
-  products,
-  onUpdateProducts: updateProducts,
+function DocumentList({
+  documents,
+  onUpdateDocuments: updateDocuments,
 }: {
-  products: Product[];
-  onUpdateProducts: Function;
+  documents: Document[];
+  onUpdateDocuments: Function;
 }) {
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`${API_URL}/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/documents/${id}`, {
         method: 'DELETE',
       });
-      if (res.ok) updateProducts();
+      if (res.ok) updateDocuments();
     } catch (error) {
       console.log(error);
     }
@@ -31,22 +31,22 @@ function ProductList({
 
   return (
     <SimpleGrid spacing={4}>
-      {products.map((product) => (
-        <Card key={product.ID}>
+      {documents.map((document) => (
+        <Card key={document.ID}>
           <CardHeader>
             <Flex>
-              <Text>Code: {product.Code}</Text>
+              <Text>Name: {document.Name}</Text>
               <Spacer />
               <Button
                 colorScheme={'red'}
-                onClick={() => handleDelete(product.ID)}
+                onClick={() => handleDelete(document.ID)}
               >
                 X
               </Button>
             </Flex>
           </CardHeader>
           <CardBody>
-            <Text>Price: {product.Price}</Text>
+            <Text>Details</Text>
           </CardBody>
         </Card>
       ))}
@@ -54,4 +54,4 @@ function ProductList({
   );
 }
 
-export default ProductList;
+export default DocumentList;
