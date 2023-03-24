@@ -17,12 +17,8 @@ import (
 
 type Document struct {
 	gorm.Model
-	Name string `gorm:"unique"`
-}
-
-type DocumentCreate struct {
-	Code  string `json:"Code" form:"Code"`
-	Price uint   `json:"Price" form:"Price"`
+	Name     string `gorm:"unique"`
+	Filename string `gorm:"unique"`
 }
 
 var db *gorm.DB
@@ -66,9 +62,13 @@ func main() {
 		AllowOrigins: "*",
 	}))
 
+	storagePath := "./file-storage/"
+
 	app.Static("/", "./client/dist")
+	app.Static("/files", storagePath)
 
 	api := app.Group("/api")
+
 	documentApi := api.Group("documents")
 
 	documentApi.Get("/", func(c *fiber.Ctx) error {
@@ -94,7 +94,6 @@ func main() {
 			return err
 		}
 
-		storagePath := "./file-storage/"
 		err = os.MkdirAll(storagePath, os.ModePerm)
 		if err != nil {
 			return err
@@ -105,7 +104,7 @@ func main() {
 			return err
 		}
 
-		p := Document{Name: np.Name}
+		p := Document{Name: np.Name, Filename: file.Filename}
 
 		result := db.Create(&p)
 		if result.Error != nil {

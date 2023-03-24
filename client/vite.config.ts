@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react-swc';
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: { '/api': 'http://127.0.0.1:3000' },
+    proxy: {
+      '/api': 'http://127.0.0.1:3000',
+      '/files': 'http://127.0.0.1:3000',
+    },
   },
 });

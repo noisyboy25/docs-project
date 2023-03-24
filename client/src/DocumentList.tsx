@@ -7,6 +7,7 @@ import {
   Button,
   Flex,
   Spacer,
+  Link,
 } from '@chakra-ui/react';
 import { Document } from './App';
 import { API_URL } from './global';
@@ -46,7 +47,9 @@ function DocumentList({
             </Flex>
           </CardHeader>
           <CardBody>
-            <Text>Details</Text>
+            <Link href={`/files/${document.Filename}`}>
+              {document.Filename}
+            </Link>
           </CardBody>
         </Card>
       ))}

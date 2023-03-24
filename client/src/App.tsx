@@ -10,6 +10,7 @@ export type Document = {
   UpdatedAt: string;
   DeletedAt: string;
   Name: string;
+  Filename: string;
 };
 
 function App() {
