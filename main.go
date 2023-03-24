@@ -94,13 +94,13 @@ func main() {
 			return err
 		}
 
-		storagePath := "./file-storage"
+		storagePath := "./file-storage/"
 		err = os.MkdirAll(storagePath, os.ModePerm)
 		if err != nil {
 			return err
 		}
 
-		err = c.SaveFile(file, fmt.Sprintf("./file-storage/%s", file.Filename))
+		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, file.Filename))
 		if err != nil {
 			return err
 		}
