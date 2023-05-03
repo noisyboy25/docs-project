@@ -1,5 +1,4 @@
 import { Button, FormControl, FormLabel, Input } from '@chakra-ui/react';
-import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { API_URL } from './global';
 
