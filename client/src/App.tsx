@@ -4,10 +4,12 @@ import NavBar from './NavBar';
 
 const App = () => {
   return (
-    <Container>
+    <>
       <NavBar />
-      <Outlet />
-    </Container>
+      <Container p={'1em'}>
+        <Outlet />
+      </Container>
+    </>
   );
 };
 

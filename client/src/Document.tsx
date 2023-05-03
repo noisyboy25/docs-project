@@ -1,6 +1,14 @@
 import DocumentList from './DocumentList';
 import DocumentForm from './DocumentForm';
-import { Container, Flex } from '@chakra-ui/react';
+import {
+  Container,
+  Flex,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { API_URL } from './global';
 
@@ -28,15 +36,28 @@ const Document = () => {
 
   return (
     <>
-      <Container>
-        <Flex flexDir={'column'} gap={'1em'}>
-          <DocumentForm onUpdateDocuments={handleUpdateDocuments} />
-          <DocumentList
-            documents={documents}
-            onUpdateDocuments={handleUpdateDocuments}
-          />
-        </Flex>
-      </Container>
+      <Tabs variant={'solid-rounded'} isLazy isManual orientation={'vertical'}>
+        <TabList p={'1em'} gap={'0.5em'}>
+          <Tab>Documents</Tab>
+          <Tab>Templates</Tab>
+          <Tab>Logs</Tab>
+          <Tab>Users</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <Flex flexDir={'column'} gap={'1em'}>
+              <DocumentForm onUpdateDocuments={handleUpdateDocuments} />
+              <DocumentList
+                documents={documents}
+                onUpdateDocuments={handleUpdateDocuments}
+              />
+            </Flex>
+          </TabPanel>
+          <TabPanel>Templates</TabPanel>
+          <TabPanel>Logs</TabPanel>
+          <TabPanel>Users</TabPanel>
+        </TabPanels>
+      </Tabs>
     </>
   );
 };
