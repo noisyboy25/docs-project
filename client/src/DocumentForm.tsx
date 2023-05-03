@@ -7,11 +7,11 @@ type Inputs = {
   file: any;
 };
 
-function DocumentForm({
+const DocumentForm = ({
   onUpdateDocuments: updateDocuments,
 }: {
   onUpdateDocuments: Function;
-}) {
+}) => {
   const { register, handleSubmit, reset } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
@@ -52,6 +52,6 @@ function DocumentForm({
       </Button>
     </form>
   );
-}
+};
 
 export default DocumentForm;

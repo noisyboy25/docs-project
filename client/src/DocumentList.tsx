@@ -9,16 +9,16 @@ import {
   Spacer,
   Link,
 } from '@chakra-ui/react';
-import { Document } from './App';
+import { DocumentInfo } from './Document';
 import { API_URL } from './global';
 
-function DocumentList({
+const DocumentList = ({
   documents,
   onUpdateDocuments: updateDocuments,
 }: {
-  documents: Document[];
+  documents: DocumentInfo[];
   onUpdateDocuments: Function;
-}) {
+}) => {
   const handleDelete = async (id: number) => {
     try {
       const res = await fetch(`${API_URL}/api/documents/${id}`, {
@@ -53,6 +53,6 @@ function DocumentList({
       ))}
     </SimpleGrid>
   );
-}
+};
 
 export default DocumentList;
