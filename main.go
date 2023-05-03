@@ -81,8 +81,6 @@ func main() {
 			return result.Error
 		}
 
-		log.Printf("%v", document)
-
 		return c.Download(fmt.Sprintf("%s/%s", storagePath, document.Uuid), document.Filename)
 	})
 
