@@ -67,7 +67,6 @@ func main() {
 	storagePath := "./file-storage/"
 
 	app.Static("/", "./client/dist")
-	// app.Static("/files", storagePath)
 
 	api := app.Group("/api")
 	filesApi := app.Group("/files")
