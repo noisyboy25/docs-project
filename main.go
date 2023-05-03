@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,7 +19,8 @@ import (
 type Document struct {
 	gorm.Model
 	Name     string `gorm:"unique"`
-	Filename string `gorm:"unique"`
+	Uuid     string `gorm:"unique"`
+	Filename string
 }
 
 var db *gorm.DB
@@ -65,9 +67,25 @@ func main() {
 	storagePath := "./file-storage/"
 
 	app.Static("/", "./client/dist")
-	app.Static("/files", storagePath)
+	// app.Static("/files", storagePath)
 
 	api := app.Group("/api")
+	filesApi := app.Group("/files")
+
+	filesApi.Get("/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		var document Document
+
+		result := db.First(&document, id)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		log.Printf("%v", document)
+
+		return c.Download(fmt.Sprintf("%s/%s", storagePath, document.Uuid), document.Filename)
+	})
 
 	documentApi := api.Group("documents")
 
@@ -99,12 +117,14 @@ func main() {
 			return err
 		}
 
-		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, file.Filename))
+		uuid := uuid.New().String()
+
+		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, uuid))
 		if err != nil {
 			return err
 		}
 
-		p := Document{Name: np.Name, Filename: file.Filename}
+		p := Document{Name: np.Name, Filename: file.Filename, Uuid: uuid}
 
 		result := db.Create(&p)
 		if result.Error != nil {

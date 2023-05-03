@@ -47,9 +47,7 @@ function DocumentList({
             </Flex>
           </CardHeader>
           <CardBody>
-            <Link href={`/files/${document.Filename}`}>
-              {document.Filename}
-            </Link>
+            <Link href={`/files/${document.ID}`}>{document.Filename}</Link>
           </CardBody>
         </Card>
       ))}
