@@ -1,7 +1,7 @@
 services:
   # A Docker web service
   - type: web
-    name: fiber
+    name: api
     env: docker
     region: frankfurt # optional (defaults to oregon)
     plan: free # optional (defaults to starter)
@@ -10,6 +10,19 @@ services:
         fromDatabase:
           name: test
           property: connectionString
+  - type: web
+    name: web client
+    rootDir: client
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_HOST
+        fromService:
+          name: api
+          type: web
+          property: host
+
 databases:
   # db 1
   - name: test
