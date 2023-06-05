@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,13 +27,18 @@ type Document struct {
 
 var db *gorm.DB
 
-func init() {
+func setupCloseHandler() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		os.Exit(0)
+	}()
+}
+
+func setupDatabase() {
 	var err error
-	err = godotenv.Load()
-	if err != nil {
-		log.Println("failed to load .env file")
-	}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 3; i++ {
 		var db_conn_str string
 
 		db_url := os.Getenv("DB_URL")
@@ -58,6 +65,15 @@ func init() {
 }
 
 func main() {
+	setupCloseHandler()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("failed to load .env file")
+	}
+
+	setupDatabase()
+
 	app := fiber.New(fiber.Config{BodyLimit: 50 * 1024 * 1024})
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
