@@ -1,16 +1,17 @@
 import {
-  Card,
-  CardBody,
-  CardHeader,
-  SimpleGrid,
   Text,
   Button,
   Flex,
   Spacer,
   Link,
+  ListItem,
+  Box,
+  List,
 } from '@chakra-ui/react';
+import { DeleteIcon, DownloadIcon } from '@chakra-ui/icons';
 import { DocumentInfo } from './Document';
 import { API_URL } from './global';
+import DocumentVersions from './DocumentVersions';
 
 const DocumentList = ({
   documents,
@@ -31,27 +32,25 @@ const DocumentList = ({
   };
 
   return (
-    <SimpleGrid spacing={4}>
+    <List spacing={'1em'}>
       {documents.map((document) => (
-        <Card key={document.ID}>
-          <CardHeader>
-            <Flex>
-              <Text>Name: {document.Name}</Text>
-              <Spacer />
-              <Button
-                colorScheme={'red'}
-                onClick={() => handleDelete(document.ID)}
-              >
-                X
-              </Button>
-            </Flex>
-          </CardHeader>
-          <CardBody>
-            <Link href={`/files/${document.ID}`}>{document.Filename}</Link>
-          </CardBody>
-        </Card>
+        <ListItem key={document.ID}>
+          <Flex align={'center'} gap={'1em'}>
+            <Text>{document.Name}</Text>
+            <Spacer />
+            <Box>
+              <Link href={`/files/${document.ID}`} title={document.Filename}>
+                <DownloadIcon />
+              </Link>
+            </Box>
+            <DocumentVersions />
+            <Button color={'red.500'} onClick={() => handleDelete(document.ID)}>
+              <DeleteIcon />
+            </Button>
+          </Flex>
+        </ListItem>
       ))}
-    </SimpleGrid>
+    </List>
   );
 };
 
