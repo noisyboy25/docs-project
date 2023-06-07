@@ -20,7 +20,13 @@ import (
 
 type Document struct {
 	gorm.Model
-	Name     string `gorm:"unique"`
+	Name   string `gorm:"unique"`
+	FileID int
+	File   File
+}
+
+type File struct {
+	gorm.Model
 	Uuid     string `gorm:"unique"`
 	Filename string
 }
@@ -61,7 +67,7 @@ func setupDatabase() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&Document{})
+	db.AutoMigrate(&Document{}, &File{})
 }
 
 func main() {
@@ -92,12 +98,12 @@ func main() {
 
 		var document Document
 
-		result := db.First(&document, id)
+		result := db.Preload("File").First(&document, id)
 		if result.Error != nil {
 			return result.Error
 		}
 
-		return c.Download(fmt.Sprintf("%s/%s", storagePath, document.Uuid), document.Filename)
+		return c.Download(fmt.Sprintf("%s/%s", storagePath, document.File.Uuid), document.File.Filename)
 	})
 
 	documentApi := api.Group("documents")
@@ -137,7 +143,8 @@ func main() {
 			return err
 		}
 
-		p := Document{Name: np.Name, Filename: file.Filename, Uuid: uuid}
+		f := File{Filename: file.Filename, Uuid: uuid}
+		p := Document{Name: np.Name, File: f}
 
 		result := db.Create(&p)
 		if result.Error != nil {
