@@ -8,7 +8,7 @@ import {
   Box,
   List,
 } from '@chakra-ui/react';
-import { DeleteIcon, DownloadIcon } from '@chakra-ui/icons';
+import { DeleteIcon } from '@chakra-ui/icons';
 import { DocumentInfo } from './Document';
 import { API_URL } from './global';
 import DocumentVersions from './DocumentVersions';

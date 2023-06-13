@@ -20,8 +20,8 @@ import (
 
 type Document struct {
 	gorm.Model
-	Name string `gorm:"unique"`
-	File File   `gorm:"foreignKey:ID"`
+	Name  string `gorm:"unique"`
+	Files []File `gorm:"foreignKey:ID"`
 }
 
 type File struct {
@@ -110,7 +110,7 @@ func main() {
 	documentApi.Get("/", func(c *fiber.Ctx) error {
 		var documents = []Document{}
 
-		result := db.Preload("File").Find(&documents)
+		result := db.Preload("Files").Find(&documents)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -142,13 +142,15 @@ func main() {
 			return err
 		}
 
-		f := File{Filename: file.Filename, Uuid: uuid}
-		p := Document{Name: np.Name, File: f}
+		p := Document{Name: np.Name}
 
 		result := db.Create(&p)
 		if result.Error != nil {
 			return result.Error
 		}
+
+		f := File{Filename: file.Filename, Uuid: uuid}
+		db.Model(&p).Association("Files").Append(&f)
 
 		return c.JSON(p)
 	})

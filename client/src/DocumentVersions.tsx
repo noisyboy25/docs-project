@@ -26,22 +26,19 @@ const DocumentVersions = ({ document }: { document: DocumentInfo }) => {
         <ModalOverlay />
         <ModalContent>
           <List>
-            <ListItem>
-              <Flex p={'1em'}>
-                <Box>{document.File.Filename}</Box>
-                <Box>
-                  {new Date(
-                    Date.parse(document.File.UpdatedAt)
-                  ).toLocaleString()}
-                </Box>
-                <Link
-                  href={`/files/${document.File.ID}`}
-                  title={document.File.Filename}
-                >
-                  <DownloadIcon />
-                </Link>
-              </Flex>
-            </ListItem>
+            {document.Files.map((f) => (
+              <ListItem key={f.ID}>
+                <Flex p={'1em'}>
+                  <Box>{f.Filename}</Box>
+                  <Box>
+                    {new Date(Date.parse(f.UpdatedAt)).toLocaleString()}
+                  </Box>
+                  <Link href={`/files/${f.ID}`} title={f.Filename}>
+                    <DownloadIcon />
+                  </Link>
+                </Flex>
+              </ListItem>
+            ))}
           </List>
         </ModalContent>
       </Modal>

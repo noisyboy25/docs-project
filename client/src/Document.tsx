@@ -18,7 +18,7 @@ export type DocumentInfo = {
   UpdatedAt: string;
   DeletedAt: string;
   Name: string;
-  File: FileInfo;
+  Files: FileInfo[];
 };
 
 export type FileInfo = {
