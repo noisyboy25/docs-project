@@ -18,6 +18,15 @@ export type DocumentInfo = {
   UpdatedAt: string;
   DeletedAt: string;
   Name: string;
+  File: FileInfo;
+};
+
+export type FileInfo = {
+  ID: number;
+  CreatedAt: string;
+  UpdatedAt: string;
+  DeletedAt: string;
+  Uuid: string;
   Filename: string;
 };
 

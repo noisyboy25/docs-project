@@ -38,12 +38,7 @@ const DocumentList = ({
           <Flex align={'center'} gap={'1em'}>
             <Text>{document.Name}</Text>
             <Spacer />
-            <Box>
-              <Link href={`/files/${document.ID}`} title={document.Filename}>
-                <DownloadIcon />
-              </Link>
-            </Box>
-            <DocumentVersions />
+            <DocumentVersions document={document} />
             <Button color={'red.500'} onClick={() => handleDelete(document.ID)}>
               <DeleteIcon />
             </Button>

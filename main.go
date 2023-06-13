@@ -20,9 +20,8 @@ import (
 
 type Document struct {
 	gorm.Model
-	Name   string `gorm:"unique"`
-	FileID int
-	File   File
+	Name string `gorm:"unique"`
+	File File   `gorm:"foreignKey:ID"`
 }
 
 type File struct {
@@ -96,14 +95,14 @@ func main() {
 	filesApi.Get("/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 
-		var document Document
+		var file File
 
-		result := db.Preload("File").First(&document, id)
+		result := db.First(&file, id)
 		if result.Error != nil {
 			return result.Error
 		}
 
-		return c.Download(fmt.Sprintf("%s/%s", storagePath, document.File.Uuid), document.File.Filename)
+		return c.Download(fmt.Sprintf("%s/%s", storagePath, file.Uuid), file.Filename)
 	})
 
 	documentApi := api.Group("documents")
@@ -111,7 +110,7 @@ func main() {
 	documentApi.Get("/", func(c *fiber.Ctx) error {
 		var documents = []Document{}
 
-		result := db.Find(&documents)
+		result := db.Preload("File").Find(&documents)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -155,9 +154,12 @@ func main() {
 	})
 
 	documentApi.Delete("/:id", func(c *fiber.Ctx) error {
-		id := c.Params("id")
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return err
+		}
 
-		result := db.Delete(&Document{}, id)
+		result := db.Select("File").Delete(&Document{}, id)
 		if result.Error != nil {
 			return result.Error
 		}
