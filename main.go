@@ -21,13 +21,14 @@ import (
 type Document struct {
 	gorm.Model
 	Name  string `gorm:"unique"`
-	Files []File `gorm:"foreignKey:ID"`
+	Files []File `gorm:"foreignKey:DocumentID"`
 }
 
 type File struct {
 	gorm.Model
-	Uuid     string `gorm:"unique"`
-	Filename string
+	Uuid       string `gorm:"unique"`
+	Filename   string
+	DocumentID uint
 }
 
 var db *gorm.DB
@@ -161,7 +162,7 @@ func main() {
 			return err
 		}
 
-		result := db.Select("File").Delete(&Document{}, id)
+		result := db.Select("Files").Delete(&Document{Model: gorm.Model{ID: uint(id)}})
 		if result.Error != nil {
 			return result.Error
 		}
