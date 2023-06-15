@@ -38,7 +38,10 @@ const DocumentList = ({
           <Flex align={'center'} gap={'1em'}>
             <Text>{document.Name}</Text>
             <Spacer />
-            <DocumentVersions document={document} />
+            <DocumentVersions
+              document={document}
+              onUpdateDocuments={updateDocuments}
+            />
             <Button color={'red.500'} onClick={() => handleDelete(document.ID)}>
               <DeleteIcon />
             </Button>

@@ -26,9 +26,9 @@ type Document struct {
 
 type File struct {
 	gorm.Model
+	DocumentID uint
 	Uuid       string `gorm:"unique"`
 	Filename   string
-	DocumentID uint
 }
 
 var db *gorm.DB
@@ -44,7 +44,7 @@ func setupCloseHandler() {
 
 func setupDatabase() {
 	var err error
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		var db_conn_str string
 
 		db_url := os.Getenv("DB_URL")
@@ -120,9 +120,36 @@ func main() {
 	})
 
 	documentApi.Post("/", func(c *fiber.Ctx) error {
-		np := new(Document)
+		nd := new(Document)
 
-		if err := c.BodyParser(np); err != nil {
+		if err := c.BodyParser(nd); err != nil {
+			return err
+		}
+
+		d := Document{Name: nd.Name}
+
+		result := db.Create(&d)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		return c.JSON(d)
+	})
+
+	documentApi.Post("/:id/files", func(c *fiber.Ctx) error {
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return err
+		}
+
+		d := Document{Model: gorm.Model{ID: uint(id)}}
+		result := db.Find(&d)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		err = os.MkdirAll(storagePath, os.ModePerm)
+		if err != nil {
 			return err
 		}
 
@@ -131,29 +158,15 @@ func main() {
 			return err
 		}
 
-		err = os.MkdirAll(storagePath, os.ModePerm)
-		if err != nil {
-			return err
-		}
-
 		uuid := uuid.New().String()
-
 		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, uuid))
 		if err != nil {
 			return err
 		}
-
-		p := Document{Name: np.Name}
-
-		result := db.Create(&p)
-		if result.Error != nil {
-			return result.Error
-		}
-
 		f := File{Filename: file.Filename, Uuid: uuid}
-		db.Model(&p).Association("Files").Append(&f)
+		db.Model(&d).Association("Files").Append(&f)
 
-		return c.JSON(p)
+		return c.JSON(d)
 	})
 
 	documentApi.Delete("/:id", func(c *fiber.Ctx) error {

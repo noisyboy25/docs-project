@@ -4,7 +4,6 @@ import { API_URL } from './global';
 
 type Inputs = {
   name: string;
-  file: any;
 };
 
 const DocumentForm = ({
@@ -18,12 +17,12 @@ const DocumentForm = ({
       console.log(data);
       const formData = new FormData();
       formData.append('name', data.name);
-      formData.append('file', data.file[0]);
 
       const res = await fetch(`${API_URL}/api/documents/`, {
         method: 'POST',
         body: formData,
       });
+
       console.log(res);
       if (res.ok) {
         reset();
@@ -40,13 +39,7 @@ const DocumentForm = ({
         <FormLabel>Name</FormLabel>
         <Input type="text" {...register('name', { required: true })} />
       </FormControl>
-      <FormControl>
-        <FormLabel>File</FormLabel>
-        <Input
-          type="file"
-          {...register('file', { required: true, valueAsNumber: true })}
-        />
-      </FormControl>
+
       <Button mt={4} type="submit">
         Submit
       </Button>

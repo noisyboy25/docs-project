@@ -3,43 +3,100 @@ import {
   Box,
   Button,
   Flex,
+  FormControl,
+  FormLabel,
+  Input,
   Link,
   List,
   ListItem,
   Modal,
   ModalContent,
   ModalOverlay,
-  Spacer,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Tr,
   useDisclosure,
 } from '@chakra-ui/react';
 import { DocumentInfo } from './Document';
+import { API_URL } from './global';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { useEffect } from 'react';
 
-const DocumentVersions = ({ document }: { document: DocumentInfo }) => {
+type Inputs = {
+  file: any;
+};
+
+const DocumentVersions = ({
+  document,
+  onUpdateDocuments: updateDocuments,
+}: {
+  document: DocumentInfo;
+  onUpdateDocuments: Function;
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const { register, handleSubmit, reset, watch } = useForm<Inputs>();
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    try {
+      console.log(data);
+      if (!data.file) return;
+
+      const formData = new FormData();
+      formData.append('file', data.file[0]);
+      reset({ file: null });
+
+      const res = await fetch(`${API_URL}/api/documents/${document.ID}/files`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log(res);
+
+      if (res.ok) updateDocuments();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const subscription = watch(() => handleSubmit(onSubmit)());
+
+    return () => subscription.unsubscribe();
+  }, [handleSubmit, watch]);
 
   return (
     <>
       <Button onClick={onOpen}>
         <RepeatClockIcon />
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose} size={'2xl'}>
         <ModalOverlay />
-        <ModalContent>
-          <List>
-            {document.Files.map((f) => (
-              <ListItem key={f.ID}>
-                <Flex p={'1em'}>
-                  <Box>{f.Filename}</Box>
-                  <Box>
-                    {new Date(Date.parse(f.UpdatedAt)).toLocaleString()}
-                  </Box>
-                  <Link href={`/files/${f.ID}`} title={f.Filename}>
-                    <DownloadIcon />
-                  </Link>
-                </Flex>
-              </ListItem>
-            ))}
-          </List>
+        <ModalContent p={'1em'}>
+          <FormControl>
+            <FormLabel>Add version</FormLabel>
+            <Input type="file" {...register('file', { required: true })} />
+          </FormControl>
+          <TableContainer>
+            <Table>
+              <Tbody>
+                {document.Files.map((f) => (
+                  <Tr key={f.ID}>
+                    <Td>{f.Filename}</Td>
+                    <Td>
+                      {new Date(Date.parse(f.UpdatedAt)).toLocaleString()}
+                    </Td>
+                    <Td>
+                      <Link href={`/files/${f.ID}`} title={f.Filename}>
+                        <DownloadIcon />
+                      </Link>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
         </ModalContent>
       </Modal>
     </>
