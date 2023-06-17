@@ -31,6 +31,12 @@ type File struct {
 	Filename   string
 }
 
+type LogMessage struct {
+	gorm.Model
+	Message string
+	UserID  uint
+}
+
 var db *gorm.DB
 
 func setupCloseHandler() {
@@ -67,7 +73,7 @@ func setupDatabase() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&Document{}, &File{})
+	db.AutoMigrate(&Document{}, &File{}, &LogMessage{})
 }
 
 func main() {
@@ -94,6 +100,9 @@ func main() {
 	filesApi := app.Group("/files")
 
 	filesApi.Get("/:id", func(c *fiber.Ctx) error {
+		m := LogMessage{Message: "GET /documents/:id", UserID: 0}
+		db.Create(&m)
+
 		id := c.Params("id")
 
 		var file File
@@ -109,6 +118,9 @@ func main() {
 	documentApi := api.Group("documents")
 
 	documentApi.Get("/", func(c *fiber.Ctx) error {
+		m := LogMessage{Message: "GET /documents", UserID: 0}
+		db.Create(&m)
+
 		var documents = []Document{}
 
 		result := db.Preload("Files").Find(&documents)
@@ -120,6 +132,9 @@ func main() {
 	})
 
 	documentApi.Post("/", func(c *fiber.Ctx) error {
+		m := LogMessage{Message: "POST /documents", UserID: 0}
+		db.Create(&m)
+
 		nd := new(Document)
 
 		if err := c.BodyParser(nd); err != nil {
@@ -137,6 +152,9 @@ func main() {
 	})
 
 	documentApi.Post("/:id/files", func(c *fiber.Ctx) error {
+		m := LogMessage{Message: "POST /documents/../files", UserID: 0}
+		db.Create(&m)
+
 		id, err := c.ParamsInt("id")
 		if err != nil {
 			return err
@@ -170,6 +188,9 @@ func main() {
 	})
 
 	documentApi.Delete("/:id", func(c *fiber.Ctx) error {
+		m := LogMessage{Message: "DELETE /documents", UserID: 0}
+		db.Create(&m)
+
 		id, err := c.ParamsInt("id")
 		if err != nil {
 			return err
@@ -181,6 +202,16 @@ func main() {
 		}
 
 		return c.SendStatus(fiber.StatusNoContent)
+	})
+
+	logsApi := api.Group("logs")
+
+	logsApi.Get("/", func(c *fiber.Ctx) error {
+		messages := []LogMessage{}
+
+		db.Find(&messages)
+
+		return c.JSON(fiber.Map{"messages": messages})
 	})
 
 	log.Fatal(app.Listen(":3000"))

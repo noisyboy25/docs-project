@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { API_URL } from './global';
+import LogList from './LogList';
 
 export type DocumentInfo = {
   ID: number;
@@ -44,11 +45,17 @@ const Document = () => {
 
   return (
     <>
-      <Tabs variant={'solid-rounded'} isLazy isManual orientation={'vertical'}>
+      <Tabs
+        variant={'solid-rounded'}
+        isLazy
+        isManual
+        orientation={'vertical'}
+        w={'xl'}
+      >
         <TabList p={'1em'} gap={'0.5em'}>
           <Tab>Documents</Tab>
-          <Tab>Templates</Tab>
           <Tab>Logs</Tab>
+          <Tab>Templates</Tab>
           <Tab>Users</Tab>
         </TabList>
         <TabPanels>
@@ -61,8 +68,10 @@ const Document = () => {
               />
             </Flex>
           </TabPanel>
+          <TabPanel>
+            <LogList />
+          </TabPanel>
           <TabPanel>Templates</TabPanel>
-          <TabPanel>Logs</TabPanel>
           <TabPanel>Users</TabPanel>
         </TabPanels>
       </Tabs>
