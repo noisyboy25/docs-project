@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL } from './global';
-import { Table, TableContainer, Tbody, Td, Tr } from '@chakra-ui/react';
+import { Table, TableContainer, Tbody, Td, Thead, Tr } from '@chakra-ui/react';
 
 type LogMessage = {
   ID: number;
@@ -27,6 +27,14 @@ const LogList = () => {
   return (
     <TableContainer>
       <Table>
+        <Thead>
+          <Tr>
+            <Td>ID</Td>
+            <Td>Message</Td>
+            <Td>User ID</Td>
+            <Td>Date</Td>
+          </Tr>
+        </Thead>
         <Tbody>
           {logs.map((m) => (
             <Tr>
