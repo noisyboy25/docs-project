@@ -50,7 +50,7 @@ const Document = () => {
         isLazy
         isManual
         orientation={'vertical'}
-        w={'xl'}
+        size={'lg'}
       >
         <TabList p={'1em'} gap={'0.5em'}>
           <Tab>Documents</Tab>

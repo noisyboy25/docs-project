@@ -6,7 +6,7 @@ const App = () => {
   return (
     <>
       <NavBar />
-      <Container p={'1em'}>
+      <Container p={'1em'} maxW={'4xl'}>
         <Outlet />
       </Container>
     </>

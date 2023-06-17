@@ -83,7 +83,11 @@ const DocumentVersions = ({
               <Tbody>
                 {document.Files.map((f) => (
                   <Tr key={f.ID}>
-                    <Td>{f.Filename}</Td>
+                    <Td maxW={'20ch'} overflow={'hidden'} title={f.Filename}>
+                      {`${f.Filename.substring(0, 18)}${
+                        f.Filename.length > 18 ? '...' : ''
+                      }`}
+                    </Td>
                     <Td>
                       {new Date(Date.parse(f.UpdatedAt)).toLocaleString()}
                     </Td>
