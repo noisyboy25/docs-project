@@ -39,6 +39,7 @@ type LogMessage struct {
 
 var db *gorm.DB
 
+// для завершения работы программы
 func setupCloseHandler() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -48,11 +49,15 @@ func setupCloseHandler() {
 	}()
 }
 
+// запуск БД
 func setupDatabase() {
 	var err error
+
+	//5 попыток подключения
 	for i := 0; i < 5; i++ {
 		var db_conn_str string
 
+		//загрузка конфигурации, конфиг в .env
 		db_url := os.Getenv("DB_URL")
 		if db_url != "" {
 			db_conn_str = db_url
@@ -60,6 +65,7 @@ func setupDatabase() {
 			db_conn_str = fmt.Sprintf("user=postgres password=%s port=5432 dbname=postgres", os.Getenv("POSTGRES_PASSWORD"))
 		}
 
+		//подключение к БД
 		db, err = gorm.Open(postgres.Open(db_conn_str), &gorm.Config{})
 		if err != nil {
 			log.Printf("failed to connect database, reconnecting...")
@@ -73,12 +79,14 @@ func setupDatabase() {
 		panic("failed to connect database")
 	}
 
+	//создание таблиц в БД
 	db.AutoMigrate(&Document{}, &File{}, &LogMessage{})
 }
 
 func main() {
 	setupCloseHandler()
 
+	//ошибка при не находжении .env файла, но не останавливает прог.
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("failed to load .env file")
@@ -86,19 +94,20 @@ func main() {
 
 	setupDatabase()
 
-	app := fiber.New(fiber.Config{BodyLimit: 50 * 1024 * 1024})
-	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+	app := fiber.New(fiber.Config{BodyLimit: 50 * 1024 * 1024}) //создание приложения
+	app.Use(logger.New())                                       //подключение логирования
+	app.Use(cors.New(cors.Config{                               //настройка корс
+		AllowOrigins: "*", //сервер отвечает клиентам с любого адресса
 	}))
 
-	storagePath := "./file-storage/"
+	storagePath := "./file-storage/" //установка пути для храннеия файлов
 
-	app.Static("/", "./client/dist")
+	app.Static("/", "./client/dist") //хранилище статичных файлов
 
-	api := app.Group("/api")
+	api := app.Group("/api") //создание пути для api
 	filesApi := app.Group("/files")
 
+	//скачивание файла по id
 	filesApi.Get("/:id", func(c *fiber.Ctx) error {
 		m := LogMessage{Message: "GET /documents/:id", UserID: 0}
 		db.Create(&m)
@@ -107,42 +116,49 @@ func main() {
 
 		var file File
 
+		//поиск файла в БД
 		result := db.First(&file, id)
 		if result.Error != nil {
 			return result.Error
 		}
 
+		//скачивание файла
 		return c.Download(fmt.Sprintf("%s/%s", storagePath, file.Uuid), file.Filename)
 	})
 
 	documentApi := api.Group("documents")
 
+	//получение списка документов
 	documentApi.Get("/", func(c *fiber.Ctx) error {
 		m := LogMessage{Message: "GET /documents", UserID: 0}
 		db.Create(&m)
 
-		var documents = []Document{}
+		var documents = []Document{} //созданеи пустого списка
 
-		result := db.Preload("Files").Find(&documents)
+		result := db.Preload("Files").Find(&documents) //загрузка данных в пуст. список
 		if result.Error != nil {
 			return result.Error
 		}
 
-		return c.JSON(fiber.Map{"documents": documents})
+		return c.JSON(fiber.Map{"documents": documents}) //форматирование списка и ответ на запрос
 	})
 
+	//загрузка документа в БД
 	documentApi.Post("/", func(c *fiber.Ctx) error {
 		m := LogMessage{Message: "POST /documents", UserID: 0}
 		db.Create(&m)
 
-		nd := new(Document)
+		nd := new(Document) //создание пустого объекта
 
+		//обработка форм
 		if err := c.BodyParser(nd); err != nil {
 			return err
 		}
 
+		//загрузка данных формы в объект
 		d := Document{Name: nd.Name}
 
+		//загрука нового документа в БД
 		result := db.Create(&d)
 		if result.Error != nil {
 			return result.Error
@@ -151,51 +167,61 @@ func main() {
 		return c.JSON(d)
 	})
 
+	//загркзка файла
 	documentApi.Post("/:id/files", func(c *fiber.Ctx) error {
 		m := LogMessage{Message: "POST /documents/../files", UserID: 0}
 		db.Create(&m)
 
+		//чтение id и загрука в переменнную id
 		id, err := c.ParamsInt("id")
 		if err != nil {
 			return err
 		}
 
+		//поиск документа в БД
 		d := Document{Model: gorm.Model{ID: uint(id)}}
 		result := db.Find(&d)
 		if result.Error != nil {
 			return result.Error
 		}
 
+		//создание папки, если её нет
 		err = os.MkdirAll(storagePath, os.ModePerm)
 		if err != nil {
 			return err
 		}
 
+		//чтение форм
 		file, err := c.FormFile("file")
 		if err != nil {
 			return err
 		}
 
-		uuid := uuid.New().String()
-		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, uuid))
+		//сохреннение файла
+		uuid := uuid.New().String()                                    //создание ранд. назв файла
+		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, uuid)) // сохранение файла на диск
 		if err != nil {
 			return err
 		}
-		f := File{Filename: file.Filename, Uuid: uuid}
-		db.Model(&d).Association("Files").Append(&f)
+		f := File{Filename: file.Filename, Uuid: uuid} //создание объекта для загрузки в БД
+		db.Model(&d).Association("Files").Append(&f)   // загрузка в БД
 
 		return c.JSON(d)
 	})
 
+	//удаление документа
 	documentApi.Delete("/:id", func(c *fiber.Ctx) error {
+		//создание логов
 		m := LogMessage{Message: "DELETE /documents", UserID: 0}
 		db.Create(&m)
 
+		//чтение id
 		id, err := c.ParamsInt("id")
 		if err != nil {
 			return err
 		}
 
+		//нахождени и удаление документа по id
 		result := db.Select("Files").Delete(&Document{Model: gorm.Model{ID: uint(id)}})
 		if result.Error != nil {
 			return result.Error
@@ -206,9 +232,12 @@ func main() {
 
 	logsApi := api.Group("logs")
 
+	//получение журнала
 	logsApi.Get("/", func(c *fiber.Ctx) error {
+		//создание пустого списка
 		messages := []LogMessage{}
 
+		//заполнение списка
 		db.Find(&messages)
 
 		return c.JSON(fiber.Map{"messages": messages})
