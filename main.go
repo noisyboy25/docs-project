@@ -164,6 +164,7 @@ func main() {
 			return result.Error
 		}
 
+		m := LogMessage{Message: fmt.Sprintf("Добавлен документ (ID:%d)", d.ID), UserID: 0}
 		return c.JSON(d)
 	})
 
