@@ -140,8 +140,8 @@ func main() {
 			return result.Error
 		}
 
-		m := LogMessage{Message: "Получен список документов", UserID: 0}
-		db.Create(&m)
+		// m := LogMessage{Message: "Получен список документов", UserID: 0}
+		// db.Create(&m)
 
 		return c.JSON(fiber.Map{"documents": documents}) //форматирование списка и ответ на запрос
 	})
