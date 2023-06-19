@@ -215,17 +215,19 @@ func main() {
 		m := LogMessage{Message: "DELETE /documents", UserID: 0}
 		db.Create(&m)
 
-		//чтение id
+	documentApi.Delete("/files/:id", func(c *fiber.Ctx) error {
 		id, err := c.ParamsInt("id")
 		if err != nil {
 			return err
 		}
 
-		//нахождени и удаление документа по id
-		result := db.Select("Files").Delete(&Document{Model: gorm.Model{ID: uint(id)}})
+		result := db.Delete(&File{Model: gorm.Model{ID: uint(id)}})
 		if result.Error != nil {
 			return result.Error
 		}
+
+		m := LogMessage{Message: fmt.Sprintf("Удалён файл документа (ID:%d)", id), UserID: 0}
+		db.Create(&m)
 
 		return c.SendStatus(fiber.StatusNoContent)
 	})
