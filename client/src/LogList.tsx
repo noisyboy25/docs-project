@@ -30,14 +30,14 @@ const LogList = () => {
         <Thead>
           <Tr>
             <Td>ID</Td>
-            <Td>Message</Td>
-            <Td>User ID</Td>
-            <Td>Date</Td>
+            <Td>Сообщение</Td>
+            <Td>ID Пользователя</Td>
+            <Td>Дата</Td>
           </Tr>
         </Thead>
         <Tbody>
           {logs.map((m) => (
-            <Tr>
+            <Tr key={m.ID}>
               <Td>{m.ID}</Td>
               <Td>{m.Message}</Td>
               <Td>{m.UserID}</Td>

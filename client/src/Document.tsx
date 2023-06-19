@@ -53,10 +53,10 @@ const Document = () => {
         size={'lg'}
       >
         <TabList p={'1em'} gap={'0.5em'}>
-          <Tab>Documents</Tab>
-          <Tab>Logs</Tab>
-          <Tab>Templates</Tab>
-          <Tab>Users</Tab>
+          <Tab>Документы</Tab>
+          <Tab>Журнал</Tab>
+          {/* <Tab>Templates</Tab> */}
+          {/* <Tab>Users</Tab> */}
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -71,8 +71,8 @@ const Document = () => {
           <TabPanel>
             <LogList />
           </TabPanel>
-          <TabPanel>Templates</TabPanel>
-          <TabPanel>Users</TabPanel>
+          {/* <TabPanel>Templates</TabPanel> */}
+          {/* <TabPanel>Users</TabPanel> */}
         </TabPanels>
       </Tabs>
     </>

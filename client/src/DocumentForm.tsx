@@ -36,12 +36,12 @@ const DocumentForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormControl>
-        <FormLabel>Name</FormLabel>
+        <FormLabel>Имя документа</FormLabel>
         <Input type="text" {...register('name', { required: true })} />
       </FormControl>
 
       <Button mt={4} type="submit">
-        Submit
+        Добавить
       </Button>
     </form>
   );

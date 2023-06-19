@@ -1,7 +1,7 @@
 import { Container } from '@chakra-ui/layout';
 
 const Home = () => {
-  return <Container>Home</Container>;
+  return <Container>Главная</Container>;
 };
 
 export default Home;

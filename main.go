@@ -86,7 +86,7 @@ func setupDatabase() {
 func main() {
 	setupCloseHandler()
 
-	//ошибка при не находжении .env файла, но не останавливает прог.
+	//ошибка при не нахождении .env файла, но не останавливает прог.
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("failed to load .env file")
@@ -96,23 +96,23 @@ func main() {
 
 	app := fiber.New(fiber.Config{BodyLimit: 50 * 1024 * 1024}) //создание приложения
 	app.Use(logger.New())                                       //подключение логирования
-	app.Use(cors.New(cors.Config{                               //настройка корс
-		AllowOrigins: "*", //сервер отвечает клиентам с любого адресса
+	app.Use(cors.New(cors.Config{                               //настройка CORS
+		AllowOrigins: "*", //сервер отвечает клиентам с любого адреса
 	}))
 
-	storagePath := "./file-storage/" //установка пути для храннеия файлов
+	storagePath := "./file-storage/" //установка пути для хранения файлов
 
 	app.Static("/", "./client/dist") //хранилище статичных файлов
 
-	api := app.Group("/api") //создание пути для api
-	filesApi := app.Group("/files")
+	api := app.Group("api") //создание пути для api
+	filesApi := app.Group("files")
 
 	//скачивание файла по id
 	filesApi.Get("/:id", func(c *fiber.Ctx) error {
-		m := LogMessage{Message: "GET /documents/:id", UserID: 0}
-		db.Create(&m)
-
-		id := c.Params("id")
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return err
+		}
 
 		var file File
 
@@ -122,6 +122,9 @@ func main() {
 			return result.Error
 		}
 
+		m := LogMessage{Message: fmt.Sprintf("Загружен файл (ID:%d)", id), UserID: 0}
+		db.Create(&m)
+
 		//скачивание файла
 		return c.Download(fmt.Sprintf("%s/%s", storagePath, file.Uuid), file.Filename)
 	})
@@ -130,24 +133,21 @@ func main() {
 
 	//получение списка документов
 	documentApi.Get("/", func(c *fiber.Ctx) error {
-		m := LogMessage{Message: "GET /documents", UserID: 0}
-		db.Create(&m)
-
-		var documents = []Document{} //созданеи пустого списка
+		var documents = []Document{} //создание пустого списка
 
 		result := db.Preload("Files").Find(&documents) //загрузка данных в пуст. список
 		if result.Error != nil {
 			return result.Error
 		}
 
+		m := LogMessage{Message: "Получен список документов", UserID: 0}
+		db.Create(&m)
+
 		return c.JSON(fiber.Map{"documents": documents}) //форматирование списка и ответ на запрос
 	})
 
 	//загрузка документа в БД
 	documentApi.Post("/", func(c *fiber.Ctx) error {
-		m := LogMessage{Message: "POST /documents", UserID: 0}
-		db.Create(&m)
-
 		nd := new(Document) //создание пустого объекта
 
 		//обработка форм
@@ -158,22 +158,21 @@ func main() {
 		//загрузка данных формы в объект
 		d := Document{Name: nd.Name}
 
-		//загрука нового документа в БД
+		//загрузка нового документа в БД
 		result := db.Create(&d)
 		if result.Error != nil {
 			return result.Error
 		}
 
 		m := LogMessage{Message: fmt.Sprintf("Добавлен документ (ID:%d)", d.ID), UserID: 0}
+		db.Create(&m)
+
 		return c.JSON(d)
 	})
 
-	//загркзка файла
+	//загрузка файла
 	documentApi.Post("/:id/files", func(c *fiber.Ctx) error {
-		m := LogMessage{Message: "POST /documents/../files", UserID: 0}
-		db.Create(&m)
-
-		//чтение id и загрука в переменнную id
+		//чтение id и загрузка в переменную id
 		id, err := c.ParamsInt("id")
 		if err != nil {
 			return err
@@ -198,7 +197,7 @@ func main() {
 			return err
 		}
 
-		//сохреннение файла
+		//сохранение файла
 		uuid := uuid.New().String()                                    //создание ранд. назв файла
 		err = c.SaveFile(file, fmt.Sprintf("%s%s", storagePath, uuid)) // сохранение файла на диск
 		if err != nil {
@@ -207,14 +206,32 @@ func main() {
 		f := File{Filename: file.Filename, Uuid: uuid} //создание объекта для загрузки в БД
 		db.Model(&d).Association("Files").Append(&f)   // загрузка в БД
 
+		m := LogMessage{Message: fmt.Sprintf("Добавлен файл к документу (ID:%d)", id), UserID: 0}
+		db.Create(&m)
+
 		return c.JSON(d)
 	})
 
 	//удаление документа
 	documentApi.Delete("/:id", func(c *fiber.Ctx) error {
+		//чтение id
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return err
+		}
+
+		//нахождение и удаление документа по id
+		result := db.Select("Files").Delete(&Document{Model: gorm.Model{ID: uint(id)}})
+		if result.Error != nil {
+			return result.Error
+		}
+
 		//создание логов
-		m := LogMessage{Message: "DELETE /documents", UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Удалён документ (ID:%d)", id), UserID: 0}
 		db.Create(&m)
+
+		return c.SendStatus(fiber.StatusNoContent)
+	})
 
 	documentApi.Delete("/files/:id", func(c *fiber.Ctx) error {
 		id, err := c.ParamsInt("id")

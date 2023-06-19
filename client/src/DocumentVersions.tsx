@@ -75,7 +75,7 @@ const DocumentVersions = ({
         <ModalOverlay />
         <ModalContent p={'1em'}>
           <FormControl>
-            <FormLabel>Add version</FormLabel>
+            <FormLabel>Добавить файл</FormLabel>
             <Input type="file" {...register('file', { required: true })} />
           </FormControl>
           <TableContainer>

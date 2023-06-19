@@ -14,12 +14,12 @@ const NavBar = () => {
       <Flex justify={'space-around'} align={'center'} gap={'3em'}>
         <Box>
           <Link to={'/'} as={NavLink}>
-            Home
+            Главная
           </Link>
         </Box>
         <Box>
           <Link to={'/docs'} as={NavLink}>
-            Documents
+            Документы
           </Link>
         </Box>
       </Flex>
