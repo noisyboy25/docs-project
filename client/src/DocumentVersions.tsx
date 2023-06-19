@@ -1,4 +1,4 @@
-import { DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons';
+import { DeleteIcon, DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -60,6 +60,17 @@ const DocumentVersions = ({
     }
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`${API_URL}/api/documents/files/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) updateDocuments();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const subscription = watch(() => handleSubmit(onSubmit)());
 
@@ -92,9 +103,19 @@ const DocumentVersions = ({
                       {new Date(Date.parse(f.UpdatedAt)).toLocaleString()}
                     </Td>
                     <Td>
-                      <Link href={`/files/${f.ID}`} title={f.Filename}>
-                        <DownloadIcon />
+                      <Link
+                        href={`/files/${f.ID}`}
+                        title={f.Filename}
+                        p={'0.5em'}
+                      >
+                        <DownloadIcon mr={'0.5em'} />
                       </Link>
+                      <Button
+                        color={'red.500'}
+                        onClick={() => handleDelete(f.ID)}
+                      >
+                        <DeleteIcon />
+                      </Button>
                     </Td>
                   </Tr>
                 ))}
