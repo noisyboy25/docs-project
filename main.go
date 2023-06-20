@@ -122,7 +122,7 @@ func main() {
 			return result.Error
 		}
 
-		m := LogMessage{Message: fmt.Sprintf("Загружен файл (ID:%d)", id), UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Загружен файл (ID F:%d)", id), UserID: 0}
 		db.Create(&m)
 
 		//скачивание файла
@@ -164,7 +164,7 @@ func main() {
 			return result.Error
 		}
 
-		m := LogMessage{Message: fmt.Sprintf("Добавлен документ (ID:%d)", d.ID), UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Добавлен документ (ID D:%d)", d.ID), UserID: 0}
 		db.Create(&m)
 
 		return c.JSON(d)
@@ -206,7 +206,7 @@ func main() {
 		f := File{Filename: file.Filename, Uuid: uuid} //создание объекта для загрузки в БД
 		db.Model(&d).Association("Files").Append(&f)   // загрузка в БД
 
-		m := LogMessage{Message: fmt.Sprintf("Добавлен файл к документу (ID:%d)", id), UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Добавлен файл к документу (ID F:%d)", id), UserID: 0}
 		db.Create(&m)
 
 		return c.JSON(d)
@@ -227,7 +227,7 @@ func main() {
 		}
 
 		//создание логов
-		m := LogMessage{Message: fmt.Sprintf("Удалён документ (ID:%d)", id), UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Удалён документ (ID D:%d)", id), UserID: 0}
 		db.Create(&m)
 
 		return c.SendStatus(fiber.StatusNoContent)
@@ -244,7 +244,7 @@ func main() {
 			return result.Error
 		}
 
-		m := LogMessage{Message: fmt.Sprintf("Удалён файл документа (ID:%d)", id), UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Удалён файл документа (ID F:%d)", id), UserID: 0}
 		db.Create(&m)
 
 		return c.SendStatus(fiber.StatusNoContent)
@@ -258,7 +258,7 @@ func main() {
 		messages := []LogMessage{}
 
 		//заполнение списка
-		db.Find(&messages)
+		db.Order("created_at desc").Find(&messages)
 
 		return c.JSON(fiber.Map{"messages": messages})
 	})
