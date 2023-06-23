@@ -16,6 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 type Document struct {
@@ -55,18 +56,18 @@ func setupDatabase() {
 
 	//5 попыток подключения
 	for i := 0; i < 5; i++ {
-		var db_conn_str string
+		var dbConnStr string
 
 		//загрузка конфигурации, конфиг в .env
-		db_url := os.Getenv("DB_URL")
-		if db_url != "" {
-			db_conn_str = db_url
+		dbUrl := os.Getenv("DB_URL")
+		if dbUrl != "" {
+			dbConnStr = dbUrl
 		} else {
-			db_conn_str = fmt.Sprintf("user=postgres password=%s port=5432 dbname=postgres", os.Getenv("POSTGRES_PASSWORD"))
+			dbConnStr = fmt.Sprintf("user=postgres password=%s port=5432 dbname=postgres", os.Getenv("POSTGRES_PASSWORD"))
 		}
 
 		//подключение к БД
-		db, err = gorm.Open(postgres.Open(db_conn_str), &gorm.Config{})
+		db, err = gorm.Open(postgres.Open(dbConnStr), &gorm.Config{})
 		if err != nil {
 			log.Printf("failed to connect database, reconnecting...")
 			time.Sleep(5 * time.Second)
@@ -94,11 +95,12 @@ func main() {
 
 	setupDatabase()
 
-	app := fiber.New(fiber.Config{BodyLimit: 50 * 1024 * 1024}) //создание приложения
-	app.Use(logger.New())                                       //подключение логирования
-	app.Use(cors.New(cors.Config{                               //настройка CORS
+	app := fiber.New(fiber.Config{BodyLimit: 5 * 1024 * 1024}) //создание приложения
+	app.Use(logger.New())                                      //подключение логирования
+	app.Use(cors.New(cors.Config{                              //настройка CORS
 		AllowOrigins: "*", //сервер отвечает клиентам с любого адреса
 	}))
+	app.Use(recover.New())
 
 	storagePath := "./file-storage/" //установка пути для хранения файлов
 
@@ -111,7 +113,7 @@ func main() {
 	filesApi.Get("/:id", func(c *fiber.Ctx) error {
 		id, err := c.ParamsInt("id")
 		if err != nil {
-			return err
+			return fiber.NewError(fiber.ErrBadRequest.Code, err.Error())
 		}
 
 		var file File
@@ -119,6 +121,9 @@ func main() {
 		//поиск файла в БД
 		result := db.First(&file, id)
 		if result.Error != nil {
+			if result.Error.Error() == "record not found" {
+				return fiber.NewError(fiber.ErrNotFound.Code, result.Error.Error())
+			}
 			return result.Error
 		}
 
@@ -135,7 +140,7 @@ func main() {
 	documentApi.Get("/", func(c *fiber.Ctx) error {
 		var documents = []Document{} //создание пустого списка
 
-		result := db.Preload("Files").Find(&documents) //загрузка данных в пуст. список
+		result := db.Preload("Files", func(db *gorm.DB) *gorm.DB { return db.Order("files.created_at DESC") }).Order("created_at DESC").Find(&documents) //загрузка данных в пуст. список
 		if result.Error != nil {
 			return result.Error
 		}
@@ -182,17 +187,20 @@ func main() {
 		d := Document{Model: gorm.Model{ID: uint(id)}}
 		result := db.Find(&d)
 		if result.Error != nil {
+			if result.Error.Error() == "record not found" {
+				return fiber.NewError(fiber.ErrNotFound.Code, result.Error.Error())
+			}
 			return result.Error
-		}
-
-		//создание папки, если её нет
-		err = os.MkdirAll(storagePath, os.ModePerm)
-		if err != nil {
-			return err
 		}
 
 		//чтение форм
 		file, err := c.FormFile("file")
+		if err != nil {
+			return err
+		}
+
+		//создание папки, если её нет
+		err = os.MkdirAll(storagePath, os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -206,7 +214,7 @@ func main() {
 		f := File{Filename: file.Filename, Uuid: uuid} //создание объекта для загрузки в БД
 		db.Model(&d).Association("Files").Append(&f)   // загрузка в БД
 
-		m := LogMessage{Message: fmt.Sprintf("Добавлен файл к документу (ID F:%d)", id), UserID: 0}
+		m := LogMessage{Message: fmt.Sprintf("Добавлен файл к документу (ID D:%d)", id), UserID: 0}
 		db.Create(&m)
 
 		return c.JSON(d)
@@ -258,7 +266,7 @@ func main() {
 		messages := []LogMessage{}
 
 		//заполнение списка
-		db.Order("created_at desc").Find(&messages)
+		db.Order("created_at DESC").Find(&messages)
 
 		return c.JSON(fiber.Map{"messages": messages})
 	})

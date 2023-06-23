@@ -23,6 +23,7 @@ import { DocumentInfo } from './Document';
 import { API_URL } from './global';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
+import { ErrorMessage } from '@hookform/error-message';
 
 type Inputs = {
   file: any;
@@ -37,7 +38,14 @@ const DocumentVersions = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { register, handleSubmit, reset, watch } = useForm<Inputs>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+    setError,
+  } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
       console.log(data);
@@ -54,8 +62,21 @@ const DocumentVersions = ({
 
       console.log(res);
 
-      if (res.ok) updateDocuments();
+      if (!res.ok) {
+        setError('file', {
+          type: 'server',
+          message: 'Ошибка загрузки файла',
+        });
+        return;
+      }
+
+      updateDocuments();
     } catch (error) {
+      setError('file', {
+        type: 'server',
+        message:
+          'Ошибка загрузки файла (возможно, превышен максимальный размер файла)',
+      });
       console.log(error);
     }
   };
@@ -80,6 +101,11 @@ const DocumentVersions = ({
   return (
     <>
       <Button onClick={onOpen}>
+        {document.Files.length ? (
+          <Box pr={'0.5em'}>{document.Files.length}</Box>
+        ) : (
+          ''
+        )}
         <RepeatClockIcon />
       </Button>
       <Modal isOpen={isOpen} onClose={onClose} size={'2xl'}>
@@ -88,6 +114,11 @@ const DocumentVersions = ({
           <FormControl>
             <FormLabel>Добавить файл</FormLabel>
             <Input type="file" {...register('file', { required: true })} />
+            <ErrorMessage
+              name={'file'}
+              errors={errors}
+              render={({ message }) => <Box color={'red.600'}>{message}</Box>}
+            />
           </FormControl>
           <TableContainer>
             <Table>

@@ -12,6 +12,7 @@ import { DeleteIcon } from '@chakra-ui/icons';
 import { DocumentInfo } from './Document';
 import { API_URL } from './global';
 import DocumentVersions from './DocumentVersions';
+import { parseDate } from './util';
 
 const DocumentList = ({
   documents,
@@ -36,8 +37,11 @@ const DocumentList = ({
       {documents.map((document) => (
         <ListItem key={document.ID}>
           <Flex align={'center'} gap={'1em'}>
-            <Text>{document.Name}</Text>
+            <Text fontWeight={'semibold'}>{document.Name}</Text>
             <Spacer />
+            <Text color={'gray.500'}>
+              {parseDate(document.UpdatedAt).toLocaleTimeString()}{' '}
+            </Text>
             <DocumentVersions
               document={document}
               onUpdateDocuments={updateDocuments}
