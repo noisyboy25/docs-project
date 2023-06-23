@@ -7,6 +7,10 @@ import {
   ListItem,
   Box,
   List,
+  TableContainer,
+  Table,
+  Tr,
+  Td,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { DocumentInfo } from './Document';
@@ -33,26 +37,36 @@ const DocumentList = ({
   };
 
   return (
-    <List spacing={'1em'}>
-      {documents.map((document) => (
-        <ListItem key={document.ID}>
-          <Flex align={'center'} gap={'1em'}>
-            <Text fontWeight={'semibold'}>{document.Name}</Text>
-            <Spacer />
-            <Text color={'gray.500'}>
-              {parseDate(document.UpdatedAt).toLocaleTimeString()}{' '}
-            </Text>
-            <DocumentVersions
-              document={document}
-              onUpdateDocuments={updateDocuments}
-            />
-            <Button color={'red.500'} onClick={() => handleDelete(document.ID)}>
-              <DeleteIcon />
-            </Button>
-          </Flex>
-        </ListItem>
-      ))}
-    </List>
+    <TableContainer>
+      <Table>
+        {documents.map((document) => (
+          <Tr key={document.ID}>
+            <Td>
+              <Text fontWeight={'semibold'}>{document.Name}</Text>
+            </Td>
+            <Td>
+              <Text color={'gray.500'}>
+                {parseDate(document.UpdatedAt).toLocaleTimeString()}{' '}
+              </Text>
+            </Td>
+            <Td textAlign={'end'}>
+              <Flex justify={'end'} gap={'1em'}>
+                <DocumentVersions
+                  document={document}
+                  onUpdateDocuments={updateDocuments}
+                />
+                <Button
+                  color={'red.500'}
+                  onClick={() => handleDelete(document.ID)}
+                >
+                  <DeleteIcon />
+                </Button>
+              </Flex>
+            </Td>
+          </Tr>
+        ))}
+      </Table>
+    </TableContainer>
   );
 };
 
